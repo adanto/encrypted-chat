@@ -1,12 +1,14 @@
 #!/usr/bin/env python
-#-*- encode: utf-8 -*-
 
 from flask import *
 from Queue import *
+from Crypto.PublicKey import RSA
+from Crypto.Cipher import PKCS1_OAEP
 import socket
 import threading
 import sys
 import time
+import binascii
 
 
 ###################################################################################################################################################
@@ -30,6 +32,16 @@ app.config["TARGET_PORT"] = None
 app.config["STARTED"] = False
 
 app.config["MESSAGES"] = Queue() 
+
+app.config["PRIV_CERT"] = None 
+app.config["PUB_CERT"] = None 
+
+app.config["REMOTE_CERT"] = None
+
+app.config["REMOTE_CIPHER"] = None
+app.config["LOCAL_CIPHER"] = None
+
+
 
 ###################################################################################################################################################
 ###################################################################################################################################################
@@ -63,6 +75,9 @@ def update():
 ###################################################################################################################################################
 ###################################################################################################################################################
 
+@app.route("/test")
+def test():
+	return "hi<br/>hi hi"
 
 @app.route("/", methods=['GET', 'POST'])
 def salute():
@@ -75,13 +90,19 @@ def salute():
 		while not app.config["SERVER_RUNNING"]:
 			time.sleep(1)
 
-
+		app.config["PRIV_CERT"] = RSA.generate(4096)
+		app.config["PUB_CERT"] = app.config["PRIV_CERT"].publickey()
 
 	if request.method == 'POST':
 
 		app.config["TARGET_IP"] = request.form['ip']
 		app.config["TARGET_PORT"] = request.form['port']
+		app.config["REMOTE_CERT"] = RSA.importKey(request.form['cert'])
 
+
+		app.config["REMOTE_CIPHER"] = PKCS1_OAEP.new(app.config["REMOTE_CERT"])
+
+		app.config["LOCAL_CIPHER"] = PKCS1_OAEP.new(app.config["PRIV_CERT"])
 
 
 		return redirect(url_for("chat_handler"))
@@ -90,7 +111,7 @@ def salute():
 
 		app.config["STARTED"] = True
 
-	return render_template('salute.html', test="", addr=(app.config["BIND_IP"], app.config["BIND_PORT"]))
+	return render_template('salute.html', test="", addr=(app.config["BIND_IP"], app.config["BIND_PORT"]), pub_key=app.config["PUB_CERT"].exportKey('PEM').split("\n"), priv_key=app.config["PRIV_CERT"].exportKey('PEM').split("\n"))
 
 
 
@@ -141,7 +162,10 @@ def start_server():
 
 
 def handle_client(client_socket, addr):
-	request = client_socket.recv(1024)
+	request = client_socket.recv(4096)
+
+	print request
+
 
 	app.config["MESSAGES"].put((addr, request))
 
@@ -162,7 +186,7 @@ def send_text(text):
 	client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	client.connect((app.config["TARGET_IP"], int(app.config["TARGET_PORT"])))
 
-	client.send(text)
+	client.send(binascii.hexlify(app.config["LOCAL_CIPHER"].encrypt(text.encode('utf-8'))))
 
 
 ###################################################################################################################################################

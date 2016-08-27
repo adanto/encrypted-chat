@@ -14,10 +14,39 @@
 	<br>
 	Port to connect:<br>
 	<input type="text" name="port" value="8080">
+	<br>
+
+	Public remote cert:<br>
+	<textarea rows="14" cols="100" name="cert">
+-----BEGIN PUBLIC KEY-----
+
+-----END PUBLIC KEY-----
+	</textarea>
+
 	<br><br>
+
 	<input type="submit" value="Submit">
 
-</form> 
+
+</form><br><br>
+
+
+<div>
+	{% for line in pub_key %}
+		{{ line }}<br>
+	{% endfor %}
+</div>
+
+
+<br><br>
+
+
+
+<div>
+	{% for line in priv_key %}
+		{{ line }}<br>
+	{% endfor %}
+</div>
 
 
 </body>
