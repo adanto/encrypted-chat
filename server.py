@@ -5,7 +5,7 @@ import socket
 import threading
 
 bind_ip = "0.0.0.0"
-bind_port = 8080
+bind_port = 8085
 
 def main():
 	server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

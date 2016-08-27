@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Chat - Customer Module</title>
+		<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='css/style.css')}}" />
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+        <script src="{{url_for('static', filename='js/updates.js') }}" type="text/javascript"></script>
+</head>
+ 
+<script type="text/javascript">
+// jQuery Document
+
+$(document).ready(function(){
+    $('#send_data').on('click', function() {
+        $.ajax({
+            url: "{{ url_for('new_msg') }}",
+            method: "POST",
+            data: {
+            data: $('#usermsg').val()
+        },
+            success: function(data) {
+                $('#response').html(data);
+            }
+        });
+    });
+});
+
+
+</script>
+
+<div id="wrapper">
+    <div id="menu">
+
+        <p class="logout"><a id="exit" href="/">Exit Chat</a></p>
+
+        <div style="clear:both"></div>
+
+    </div>
+     
+    <div id="chatbox">
+
+    </div>
+     
+
+    <input name="usermsg" type="text" id="usermsg" size="63" />
+    <button id="send_data">Send</button>
+                
+</div>
+
+</body>
+</html>
