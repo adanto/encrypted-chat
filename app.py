@@ -164,12 +164,11 @@ def start_server():
 def handle_client(client_socket, addr):
 	request = client_socket.recv(4096)
 
-	print request
+	text = app.config["LOCAL_CIPHER"].decrypt(binascii.unhexlify(request))
 
+	app.config["MESSAGES"].put((addr, text))
 
-	app.config["MESSAGES"].put((addr, request))
-
-	print "\r[*] %s:%d: %s" % (addr[0], addr[1], request)
+	print "\r[*] %s:%d: %s" % (addr[0], addr[1], text)
 
 	client_socket.close()
 
@@ -186,7 +185,7 @@ def send_text(text):
 	client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	client.connect((app.config["TARGET_IP"], int(app.config["TARGET_PORT"])))
 
-	client.send(binascii.hexlify(app.config["LOCAL_CIPHER"].encrypt(text.encode('utf-8'))))
+	client.send(binascii.hexlify(app.config["REMOTE_CIPHER"].encrypt(text.encode('utf-8'))))
 
 
 ###################################################################################################################################################
