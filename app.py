@@ -169,6 +169,7 @@ def handle_client(client_socket, addr):
 	app.config["MESSAGES"].put((addr, text))
 
 	print "\r[*] %s:%d: %s" % (addr[0], addr[1], text)
+	print "lol"
 
 	client_socket.close()
 
